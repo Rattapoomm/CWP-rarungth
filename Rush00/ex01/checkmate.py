@@ -1,61 +1,60 @@
-def checkmate(board_str):
-    # if empty board
-    if not board_str:
-        print("Error, The board must not be empty.")
-        return
+def checkmate_from_str(board: str) -> str:
+    try:
+        if not isinstance(board, str):
+            return "Error"
 
-    board = [list(r) for r in board_str.splitlines()] # 2d list
-    size = len(board)
-    # Check if board is not square
-    if any(len(row) != size for row in board):
-        print("Error, The board must be square.")
-        return
+        lines = board.strip("\n").split("\n")
+        if not lines:
+            return "Error"
 
-    directions = {
-        "P": [(-1, -1), (-1, 1)],
-        "B": [(-1, -1), (-1, 1), (1, -1), (1, 1)],
-        "R": [(-1, 0), (1, 0), (0, -1), (0, 1)],
-        "Q": [(-1, -1), (-1, 1), (1, -1), (1, 1), (-1, 0), (1, 0), (0, -1), (0, 1)],
-    }
-    
-    king_pos = None
-    king_count = 0
-    # Find King position
-    for i in range(size):
-        for j in range(len(board[i])):
-            if board[i][j] == "K":
-                king_pos = (i, j)
-                king_count += 1
+        size = len(lines)
+        for row in lines:
+            if len(row) != size:
+                return "Error"
 
-    # No king or more than 1 king
-    if king_count != 1:
-        print("Error, The board must have exactly one King.")
-        return
+        king_pos = None
+        king_count = 0
+        valid_pieces = {"K", "P", "B", "R", "Q"}
 
-    king_x, king_y = king_pos # king(x, y)
-    # Check checkmate to the King
-    for i in range(size):
-        for j in range(len(board[i])):
-            piece = board[i][j]
-            if piece in directions:
-                # Check all directions for each piece
-                for dx, dy in directions[piece]:
-                    x, y = i + dx, j + dy
-                    # If the piece can move in that direction
-                    while 0 <= x < size and 0 <= y < len(board[x]):
-                        # If found the King, Then it's checkmate
-                        if (x, y) == (king_x, king_y):
-                            print("Success")
-                            return
+        for r in range(size):
+            for c in range(size):
+                if lines[r][c] == "K":
+                    king_pos = (r, c)
+                    king_count += 1
 
-                        # Not king, Other piece blocking the way
-                        if board[x][y] != ".":
-                            break
+        if king_count != 1 or king_pos is None:
+            return "Error"
 
-                        # If pawn, it can only move can one step
-                        if piece == "P":
-                            break
+        kr, kc = king_pos
 
-                        x += dx
-                        y += dy
-    print("Fail")
+        for pr, pc in [(kr + 1, kc - 1), (kr + 1, kc + 1)]:
+            if 0 <= pr < size and 0 <= pc < size:
+                if lines[pr][pc] == "P":
+                    return "Success"
+
+        for dr, dc in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
+            r, c = kr + dr, kc + dc
+            while 0 <= r < size and 0 <= c < size:
+                char = lines[r][c]
+                if char in valid_pieces:
+                    if char in ("R", "Q"):
+                        return "Success"
+                    break
+                r += dr
+                c += dc
+
+        for dr, dc in [(-1, -1), (-1, 1), (1, -1), (1, 1)]:
+            r, c = kr + dr, kc + dc
+            while 0 <= r < size and 0 <= c < size:
+                char = lines[r][c]
+                if char in valid_pieces:
+                    if char in ("B", "Q"):
+                        return "Success"
+                    break
+                r += dr
+                c += dc
+
+        return "Fail"
+
+    except Exception:
+        return "Error"

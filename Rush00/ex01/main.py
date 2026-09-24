@@ -1,19 +1,17 @@
-#!/usr/bin/env python3
-
 import sys
-from checkmate import checkmate
+from checkmate import checkmate_from_str
 
 def main():
     if len(sys.argv) < 2:
-        print("Error")
         return
-    
+
     for file_path in sys.argv[1:]:
         try:
-            with open(file_path, 'r') as f:
-                board = f.read()
-                checkmate(board)
-        except (FileNotFoundError, IOError):
+            with open(file_path, 'r', encoding='utf-8') as f:
+                board_content = f.read()
+                result = checkmate_from_str(board_content)
+                print(result)
+        except Exception:
             print("Error")
 
 if __name__ == "__main__":
